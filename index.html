@@ -26,10 +26,11 @@
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.5;
-            padding-bottom: 50px;
+            /* Отступ снизу, чтобы контент не прятался за нижней панелью */
+            padding-bottom: 200px; 
         }
 
-        /* Settings Panel */
+        /* Settings Panel (Верхняя, скроллится) */
         .settings-panel {
             background: var(--card-bg);
             padding: 20px;
@@ -226,10 +227,109 @@
             background: var(--success);
         }
 
+        /* Нижняя панель отправки (Docked) */
+        .send-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            border-top: 1px solid var(--border);
+            padding: 15px 20px;
+            z-index: 100;
+        }
+
+        .send-controls {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .send-controls .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .send-controls label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .send-controls input {
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .send-controls input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px; /* Выравнивание с полем ввода */
+        }
+
+        .send-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.1s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .send-btn.active:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .send-btn.active:active {
+            transform: translateY(0);
+        }
+
+        .send-btn.inactive {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: default;
+            filter: grayscale(100%);
+        }
+
+        .btn-wa {
+            background-color: #25D366;
+        }
+
+        .btn-tg {
+            background-color: #0088cc;
+        }
+
         /* Toast */
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 120px; /* Подняли чуть выше, чтобы не перекрывать панель */
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: #333;
@@ -249,14 +349,21 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        @media (max-width: 600px) {
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            body { padding-bottom: 220px; }
             .settings-grid { grid-template-columns: 1fr; }
             .container { grid-template-columns: 1fr; }
+            .send-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+            .send-buttons { margin-top: 0; }
+            .send-btn { flex: 1; padding: 12px 10px; }
+            .toast { bottom: 160px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Верхняя панель (скроллится) -->
     <div class="settings-panel">
         <div class="settings-grid">
             <div class="input-group">
@@ -286,17 +393,33 @@
     </div>
 
     <div class="container" id="templates-container">
-        <!-- Шаблоны будут сгенерированы через JS -->
+        <!-- Шаблоны генерируются через JS -->
+    </div>
+
+    <!-- Нижняя панель отправки (Docked) -->
+    <div class="send-panel">
+        <div class="send-controls">
+            <div class="input-wrapper">
+                <label>Номер телефона студента (с кодом страны)</label>
+                <input type="tel" id="var-phone" placeholder="+7 999 123-45-67" oninput="updateLinks()">
+            </div>
+            <div class="send-buttons">
+                <a href="#" id="btn-wa" class="send-btn btn-wa inactive" target="_blank" rel="noopener noreferrer">
+                    WhatsApp
+                </a>
+                <a href="#" id="btn-tg" class="send-btn btn-tg inactive" target="_blank" rel="noopener noreferrer">
+                    Telegram
+                </a>
+            </div>
+        </div>
     </div>
 
     <div class="toast" id="toast">Скопировано в буфер обмена!</div>
 
     <script>
-        // Жестко заданные значения по умолчанию
         const DEFAULT_COURSE = "Классическая каббала";
         const DEFAULT_STREAM = "Осень 2026";
 
-        // Базовые шаблоны с плейсхолдерами
         const templates = [
             {
                 id: "greeting",
@@ -426,45 +549,45 @@
             }
         ];
 
-        // Переменные
         let variables = {
             group: '',
             tutors: '',
             student: '',
             course: DEFAULT_COURSE,
-            stream: DEFAULT_STREAM
+            stream: DEFAULT_STREAM,
+            phone: ''
         };
 
-        // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             loadFromUrl();
             renderTemplates();
             updateVariables();
+            updateLinks();
         });
 
-        // Загрузка параметров из URL
         function loadFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('group')) variables.group = urlParams.get('group');
             if (urlParams.has('tutors')) variables.tutors = urlParams.get('tutors');
             if (urlParams.has('student')) variables.student = urlParams.get('student');
+            if (urlParams.has('phone')) variables.phone = urlParams.get('phone');
 
             document.getElementById('var-group').value = variables.group;
             document.getElementById('var-tutors').value = variables.tutors;
             document.getElementById('var-student').value = variables.student;
+            document.getElementById('var-phone').value = variables.phone;
         }
 
-        // Сохранение в URL
         function saveToUrl() {
             const url = new URL(window.location);
             if (variables.group) url.searchParams.set('group', variables.group); else url.searchParams.delete('group');
             if (variables.tutors) url.searchParams.set('tutors', variables.tutors); else url.searchParams.delete('tutors');
             if (variables.student) url.searchParams.set('student', variables.student); else url.searchParams.delete('student');
+            if (variables.phone) url.searchParams.set('phone', variables.phone); else url.searchParams.delete('phone');
             
             window.history.replaceState({}, '', url);
         }
 
-        // Обновление переменных и текста
         function updateVariables() {
             variables.group = document.getElementById('var-group').value.trim() || '___';
             variables.tutors = document.getElementById('var-tutors').value.trim() || 'Имя, Фамилия';
@@ -474,7 +597,34 @@
             updateTemplateTexts();
         }
 
-        // Применение переменных к тексту
+        function updateLinks() {
+            variables.phone = document.getElementById('var-phone').value.trim();
+            saveToUrl();
+
+            // Оставляем только цифры
+            const cleanPhone = variables.phone.replace(/[^\d]/g, '');
+            const btnWa = document.getElementById('btn-wa');
+            const btnTg = document.getElementById('btn-tg');
+
+            if (cleanPhone.length >= 10) {
+                // Добавляем "+" в ссылку wa.me, как вы просили
+                btnWa.href = `https://wa.me/+${cleanPhone}`;
+                btnTg.href = `https://t.me/+${cleanPhone}`;
+                
+                btnWa.classList.remove('inactive');
+                btnTg.classList.remove('inactive');
+                btnWa.classList.add('active');
+                btnTg.classList.add('active');
+            } else {
+                btnWa.href = '#';
+                btnTg.href = '#';
+                btnWa.classList.add('inactive');
+                btnTg.classList.add('inactive');
+                btnWa.classList.remove('active');
+                btnTg.classList.remove('active');
+            }
+        }
+
         function applyVariables(text) {
             return text
                 .replace(/{{group}}/g, variables.group)
@@ -484,7 +634,6 @@
                 .replace(/{{stream}}/g, variables.stream);
         }
 
-        // Обновление текста во всех карточках
         function updateTemplateTexts() {
             document.querySelectorAll('.card').forEach(card => {
                 const id = card.dataset.id;
@@ -502,7 +651,6 @@
             });
         }
 
-        // Рендер шаблонов
         function renderTemplates() {
             const container = document.getElementById('templates-container');
             container.innerHTML = '';
@@ -533,7 +681,6 @@
             updateTemplateTexts();
         }
 
-        // Копирование текста
         function copyText(btn) {
             const textarea = btn.closest('.card').querySelector('.card-text');
             textarea.select();
@@ -552,7 +699,6 @@
             }
         }
 
-        // Визуальный отклик при копировании
         function showSuccess(btn) {
             const originalText = btn.innerHTML;
             btn.classList.add('success');
@@ -568,7 +714,6 @@
             }, 2000);
         }
 
-        // Показ уведомления
         function showToast() {
             const toast = document.getElementById('toast');
             toast.classList.add('show');
@@ -577,7 +722,6 @@
             }, 2500);
         }
 
-        // Фильтрация
         function filterTemplates(category) {
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
@@ -591,7 +735,6 @@
             });
         }
 
-        // Названия категорий
         function getCategoryName(cat) {
             const names = {
                 'general': 'Общие',
