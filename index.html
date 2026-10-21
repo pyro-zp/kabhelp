@@ -26,7 +26,7 @@
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.5;
-            padding-bottom: 40px;
+            /* Убрали padding-bottom, чтобы не было серой полосы внизу */
         }
 
         /* Settings Panel (Верхняя) */
@@ -234,7 +234,7 @@
             box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
             padding: 25px 20px;
             margin-top: 40px;
-            position: relative; /* Для позиционирования версии */
+            position: relative; 
         }
 
         .send-controls {
@@ -402,7 +402,7 @@
         <!-- Шаблоны генерируются через JS -->
     </div>
 
-    <!-- Нижняя панель отправки (На всю ширину, не fixed) -->
+    <!-- Нижняя панель отправки -->
     <div class="send-panel">
         <div class="send-controls">
             <div class="input-wrapper">
