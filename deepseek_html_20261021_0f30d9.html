@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инструмент для работы тьюторов</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-hover: #357abd;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --border: #e0e0e0;
+            --success: #27ae60;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: 50px;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--card-bg);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .input-group input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .url-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Filters */
+        .filters {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Templates */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            padding: 15px;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #444;
+        }
+
+        .card-category {
+            font-size: 11px;
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 10px;
+            color: #666;
+        }
+
+        .card-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-text {
+            width: 100%;
+            min-height: 180px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            background: #fff;
+            color: var(--text);
+            line-height: 1.6;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .card-text:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fdfdfd;
+        }
+
+        .card-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.98);
+        }
+
+        .copy-btn.success {
+            background: var(--success);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .settings-grid { grid-template-columns: 1fr; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="settings-panel">
+        <div class="settings-grid">
+            <div class="input-group">
+                <label>№ Группы / Десятки</label>
+                <input type="text" id="var-group" placeholder="Например: 15" oninput="updateVariables()">
+            </div>
+            <div class="input-group">
+                <label>Имена тьюторов</label>
+                <input type="text" id="var-tutors" placeholder="Например: Иван, Мария" oninput="updateVariables()">
+            </div>
+            <div class="input-group">
+                <label>Имя студента</label>
+                <input type="text" id="var-student" placeholder="Например: Анна" oninput="updateVariables()">
+            </div>
+            <div class="input-group">
+                <label>Название курса</label>
+                <input type="text" id="var-course" placeholder="Например: Основы каббалы" oninput="updateVariables()">
+            </div>
+            <div class="input-group">
+                <label>Поток</label>
+                <input type="text" id="var-stream" placeholder="Например: Весна 2026" oninput="updateVariables()">
+            </div>
+        </div>
+        <div class="url-hint">
+            💡 Параметры сохраняются в адресной строке. Вы можете скопировать ссылку и сохранить её в закладки.
+        </div>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterTemplates('all')">Все</button>
+        <button class="filter-btn" onclick="filterTemplates('general')">Общие / Онбординг</button>
+        <button class="filter-btn" onclick="filterTemplates('tech')">Технические</button>
+        <button class="filter-btn" onclick="filterTemplates('personal')">Личные сообщения</button>
+        <button class="filter-btn" onclick="filterTemplates('transition')">Переход и завершение</button>
+    </div>
+
+    <div class="container" id="templates-container">
+        <!-- Шаблоны будут сгенерированы через JS -->
+    </div>
+
+    <div class="toast" id="toast">Скопировано в буфер обмена!</div>
+
+    <script>
+        // Базовые шаблоны с плейсхолдерами
+        const templates = [
+            {
+                id: "greeting",
+                title: "1. Приветствие от команды",
+                category: "general",
+                text: "☞ *Дорогие студенты Международной академии каббалы!* ☜\n\nПриветствуем вас в чате учебной группы № *{{group}}* первой части курса {{course}}.\n\nКоманда тьюторов в составе:\n{{tutors}}\n\nБудем сопровождать группу на протяжении всего курса.\n\nВы можете задавать нам ваши вопросы по организации процесса обучения, в том числе на нашем учебном сайте, технические вопросы (Zoom) и др.\n\nВопросы по духовному развитию, просим задавать преподавателям Международной академии каббалы.\n\n☞ Просим ознакомиться и соблюдать правила чата нашей учебной группы (в шапке описания чата).\n\n*Хорошего обучения!*"
+            },
+            {
+                id: "rules",
+                title: "2. Правила чата",
+                category: "general",
+                text: "*Правила чата учебной группы:*\n\n*Чат создан с целью:*\n— информирования;\n— анонсирования занятий;\n— технической поддержки;\n— активного общения студентов;\n— обмена впечатлениями от изучаемого материала.\n\n*Приветствуется:*\n— вопросы и посты, относящиеся к обучению;\n— впечатления от изучаемого материала и учебных мероприятий на курсе.\n\n*Не рекомендуется:*\n— использовать голосовые сообщения;\n— выходить за рамки доброго отношения к группе;\n— цитировать ИИ (это инструмент для обработки информации, а не источник достоверных знаний).\n\n🚫 *Запрещено:*\n— наполнять чат сторонними материалами, в т.ч. рекламой;\n— спорить и критиковать сокурсников, преподавателей, модераторов, тьюторов, методику, нашу организацию и др.;\n— обсуждать религию, другие методики, политику и ситуацию в мире;\n— разжигать вражду и ненависть в любой форме.\n\n*Несоблюдение правил дает администратору чата право удалить участника из чата, возможно исключение из академии.*\n\n_Учебный отдел МАК_ 🎓"
+            },
+            {
+                id: "policies",
+                title: "3. Политика и правила (ссылки)",
+                category: "general",
+                text: "🎓 *Дорогие студенты!* ☺\n\n*Просим вас ознакомиться с документами МАК:*\n\n1. Политика конфиденциальности и Правила организации (правила общения, дресс-код)\nhttps://edu.kabacademy.com/mod/book/view.php?id=12946\n\n2. Правила общения на Форуме\nhttps://edu.kabacademy.com/mod/book/view.php?id=12947\n\n3. Правила семинара\nhttps://edu.kabacademy.com/mod/book/view.php?id=12948\n\n*За несоблюдение правил, возможно исключение из академии.*\n\nТакже на странице курса вы можете *ознакомиться с Глоссарием*\nhttps://edu.kabacademy.com/mod/glossary/view.php?id=12949\n\n*Обратите внимание:*\nВ правом нижнем углу главной страницы курса *блок \"Прогресс\".*\n\nЗдесь будут отмечаться ☑️ элементы курса, которые вы прошли.\n\n_Учебный отдел МАК_ 🎓"
+            },
+            {
+                id: "meeting",
+                title: "4. Приглашение на знакомство",
+                category: "general",
+                text: "☀️ *Дорогие студенты, приглашаем познакомиться!* ☺\n\nПожалуйста, расскажите немного о себе и своих ожиданиях от курса. Это поможет нам лучше узнать друг друга и сделать обучение ещё интереснее и полезнее для всех.\n\nМожно ответить на любые из следующих вопросов или просто поделиться своими мыслями:\n\n*Расскажите немного о себе:*\n• меня зовут…\n• Как и почему вы заинтересовались каббалой?\n• Что вы ждёте от этого курса?\n• Какие у вас есть ожидания от обучения?\n• Есть ли у вас личные вопросы или темы, которые особенно хотелось бы разобрать?\n• Что для вас было бы самым ценным результатом по итогам занятий?\n\n_Будем рады познакомиться с вашими мыслями и ожиданиями!_\n\n*Ваши тьюторы* ☺☺"
+            },
+            {
+                id: "mute-wa",
+                title: "Отключение звуковых уведомлений",
+                category: "general",
+                text: "🔔 *Дорогие друзья!* 🔔\n\n*Скоро мы начнем открывать чат для общения* (сначала ненадолго в дневное время, чуть позднее чат будет открыт постоянно 🤫🤫🤫, поэтому мы очень вам *рекомендуем отключить звуковые уведомления о новых сообщениях в чате нашей учебной группы:*\n\n➡ *Открыть чат нашей группы*\n➡ *нажать три горизонтальные точки в правом верхнем углу*\n➡ *без звука*\n➡ *всегда.*\n\n*Пожалуйста, читайте чат группы с радостью и в удобное вам время* ☺\n\n*Ваши тьюторы!* ☺"
+            },
+            {
+                id: "close-chat",
+                title: "Закрытие чата на ночь",
+                category: "general",
+                text: "Дорогие друзья, всем спасибо! ☺\n\nНа сегодня наш чат закрываем!\n\nНапоминаем, что на начальном этапе обучения чат будет открыт для общения в формате форума (несколько часов в день).\n\nВозникшие вопросы вы можете задать нам в личном сообщении, а также в чате, когда чат будет открыт ☺\n\nГотовьте вопросы, будем рады ответить.\n\n*Ваши тьюторы* ☺"
+            },
+            {
+                id: "tg-channel",
+                title: "Приглашение в Telegram-канал",
+                category: "general",
+                text: "🎓 *Дорогие друзья!*\n\nПриглашаем вас присоединиться к каналу курса МАК {{stream}}\nhttps://t.me/osen2026MAK\n\nКанал организован с целью:\n— информирования о событиях и мероприятиях курса {{course}}\n— обсуждения тем, постов с однокурсниками.\n\nЗдесь мы будем проводить:\n📚 День экскурсий по понедельникам\n📖 День книги по субботам\n🎬 День кино по воскресеньям\n\n_Учебный отдел МАК_ 🎓"
+            },
+            {
+                id: "poll-before-webinar",
+                title: "Опрос перед вебинаром",
+                category: "tech",
+                text: "Друзья, завтра вебинар на курсе. Просим вас ответить на вопрос: Получилось ли зайти на учебный сайт?\n\nВарианты ответа:\n1. да, и даже прошел/прошла уроки\n2. да, но не понял/поняла как устроен курс\n3. еще не пробовала/пробовал\n4. не получается, нужна помощь"
+            },
+            {
+                id: "tech-site",
+                title: "Не могу зайти на сайт",
+                category: "tech",
+                text: "🎓 *Дорогие студенты!*\n\n*Чтобы войти на учебный сайт:*\nhttps://edu.kabacademy.com/course/view.php?id=236\n\n*Входить на сайт можно по одноразовой ссылке:*\n1. на странице входа введите свой email (тот, что указывали при записи на курс) и нажмите «Получить ссылку для входа».\n2. На почту придёт письмо с кнопкой «Войти» — нажимаете и попадаете в личный кабинет, все курсы на месте.\n\n*Важно:*\nПисьмо приходит за пару минут; проверьте, пожалуйста, все папки, в т.ч. «Спам».\n☑️ Ссылку в письме надо использовать сразу после получения письма и только один раз.\n\n*Если удобнее пароль — задайте пароль через «Забыли пароль?»*\nhttps://kabacademy.com/my-account/lost-password/\n\nЕсли что-то не получается — напишите нам ☺\n\n*УДАЧИ!* ☺\n_Ваши тьюторы_ ☺☺"
+            },
+            {
+                id: "tech-zoom",
+                title: "Не могу зайти на вебинар в Zoom",
+                category: "tech",
+                text: "🎓 *Дорогие студенты!*\n\n*Чтобы войти на вебинар в Zoom:*\n\n1. откройте страницу курса\nhttps://edu.kabacademy.com/course/view.php?id=236\n2. в блоке текущего урока \"Вебинар\" нажмите на ссылку ВЕБИНАР по Уроку. Далее нажимайте кнопку «Присоединиться к собранию» — и вы попадаете на вебинар.\n\nДля участия в вебинарах курса нужна программа Zoom\nhttps://zoom.us/download - пожалуйста, скачайте и установите её заранее.\n\n*УДАЧИ!* ☺\n_Ваши тьюторы_ ☺☺"
+            },
+            {
+                id: "tech-password",
+                title: "Изменить пароль / Не приходит письмо",
+                category: "tech",
+                text: "Запросить смену пароля можно по ссылке:\nhttps://kabacademy.com/my-account/lost-password/\n\nУкажите *электронную почту, по которой вы зарегистрированы на сайте.*\nВам придет письмо со ссылкой для создания нового пароля.\n\n☑️ Ссылку в письме надо использовать сразу после получения письма и только один раз.\n\n_Если письмо не пришло, проверьте папку «Спам»._"
+            },
+            {
+                id: "pm-left-chat",
+                title: "Если студент вышел из чата",
+                category: "personal",
+                text: "Здравствуйте, {{student}}!\n\nВы записались на 1 часть курса {{course}} Международной академии каббалы.\n\nПосле добавления в чат учебной группы №_{{group}} вы вышли из чата, может быть, случайно?\n\nЧат создан для общения и информирования о событиях учебного курса.\n\nЕсли вы вышли случайно или решите вернуться, сообщите мне, пожалуйста.\n\n*Звуковые уведомления чата рекомендуем выключить* ☺\n➡ *Открыть чат нашей группы* ➡ *нажать три горизонтальные точки в правом верхнем углу* ➡ *без звука* ➡ *всегда.*\n\nВаше имя, тьютор № ... уч. группы МАК."
+            },
+            {
+                id: "pm-other-messenger",
+                title: "Если нашли студента в др. мессенджере",
+                category: "personal",
+                text: "Здравствуйте, {{student}}!\n\n*Вас приветствует Международная академия каббалы.*\nПожалуйста, установите на ваш телефон приложение WhatsApp для подключения к чату учебной группы №_{{group}}.\nhttps://www.whatsapp.com/download\n\nВаше имя, тьютор уч. группы МАК."
+            },
+            {
+                id: "pm-settings-wa",
+                title: "Настройки WhatsApp (перед добавлением)",
+                category: "personal",
+                text: "Здравствуйте, {{student}}!\n\n*Вас приветствует тьютор Международной академии каббалы учебной группы №_{{group}}*\n\nВ ближайшие дни мы добавим вас в чат учебной группы.\n\n*Для подключения вас к чату, пожалуйста, временно установите в настройках WhatsApp:* _все могут добавлять меня в группы._\n\nНастройки ➡ Конфиденциальность ➡ Группы ➡ Все.\n\nВаше имя, тьютор уч. группы МАК."
+            },
+            {
+                id: "pm-undecided",
+                title: "Для тех, кто думает / еще не в группе",
+                category: "personal",
+                text: "Здравствуйте, {{student}}!\n\n*Вас приветствует тьютор Международной академии каббалы.*\n\nВы записались на 1 часть курса {{course}}.\nМы создали чат учебной группы №_{{group}} в WhatsApp.\n\n*Цель чата:*\n• информирования, в т.ч. о групповых встречах и учебных семинарах;\n• анонсирования занятий;\n• технической поддержки;\n• активного общения студентов;\n• обмена впечатлениями от изучаемого материала.\n\n*Пожалуйста, в ответном сообщении сообщите нам о вашем желании подключиться к чату группы.*\n\nЕСЛИ СООБЩЕНИЕ ОТПРАВЛЯЕМ ЧЕРЕЗ УЧЕБНЫЙ САЙТ:\n*Пожалуйста, в ответном сообщении на учебном сайте сообщите нам о вашем желании подключиться к чату группы и ваш номер телефона в WhatsApp в международном формате.*\n\nТакже просим вас *для подключения к чату временно установить в настройках WhatsApp:*\n_все могут добавлять меня в группы._\nНастройки ➡ Конфиденциальность ➡ Группы ➡ Все.\n\nВаше имя, тьютор уч. группы МАК."
+            },
+            {
+                id: "pm-never-visited",
+                title: "Личное: Никогда не заходил на сайт",
+                category: "personal",
+                text: "{{student}}, здравствуйте!\n\nМеня зовут {{tutors}}, я тьютор учебной группы №_{{group}} курса {{course}} Международной академии каббалы.\n\nОбратил(а) внимание, что вы пока не заходили на сайт, где проходит основное обучение.\n\nВозможно, вам нужна помощь со входом на учебный сайт или есть другие вопросы, пожалуйста, напишите мне.\n\nДля вашего удобства отправляю Вам ссылку на личный кабинет на нашем учебном сайте:\nhttps://edu.kabacademy.com/login/index.php\n\nРекомендуем начать обучение с текущего урока, чтобы быть в одном информационном поле с группой, а пропущенные материалы изучить в свободное время.\n\nБуду благодарен (благодарна) за обратную связь.\n\nС наилучшими пожеланиями,\nваш тьютор {{tutors}}."
+            },
+            {
+                id: "pm-low-progress",
+                title: "Личное: Мало % прохождения на сайте",
+                category: "personal",
+                text: "{{student}}, здравствуйте!\n\nМеня зовут {{tutors}}, я тьютор учебной группы №_{{group}} курса {{course}} Международной академии каббалы.\n\nОбратил(а) внимание, что вы зашли на учебный сайт и начали проходить материалы, но по каким-то причинам не все материалы проходите.\n\nБудем благодарны вам, если поделитесь, почему не проходите основные материалы (лекции, тесты, задания).\n\nЕсли есть трудности с процессом обучения на учебном сайте, устройством учебного сайта, технические сложности или другие вопросы, буду рад(а) вам помочь.\n\nДля вашего удобства отправляю Вам ссылку на личный кабинет:\nhttps://edu.kabacademy.com/login/index.php\n\nРекомендуем начать обучение с текущего урока, чтобы быть в одном информационном поле с группой, а пропущенные материалы изучить в свободное время.\n\nБуду благодарен (благодарна) за обратную связь.\n\nС наилучшими пожеланиями,\nваш тьютор {{tutors}}."
+            },
+            {
+                id: "pm-no-seminars",
+                title: "Личное: Не ходит на семинары",
+                category: "personal",
+                text: "{{student}}, здравствуйте!\n\nМеня зовут {{tutors}}, я тьютор учебной группы №_{{group}} курса {{course}} Международной академии каббалы.\n\nОбратил(а) внимание, что вы успешно проходите наш курс на учебном сайте, очень рад(а) вашим успехам.\n\nОднако вы очень редко приходите (не приходите) на семинары по понедельникам в нашей учебной группе.\n\nСеминар — особая методика построения системы отношений, основанная на законах природы, действующих во всех ее пластах на принципе объединения. Семинар — основной инструмент нашей методики.\n\nСейчас, во время обучения, мы закладываем основу будущей десятки и очень важно как можно раньше включиться в семинары.\n\nОбычно, если студент не включается в семинары на первой части курса, то с каждым следующим семинаром требуется приложить большие усилия, чтобы начать посещать семинары. Так устроена наша природа ☺ — мне трудно, некомфортно (неудобно и пр.) прийти в группу, которая уже связана между собой.\n\nНа семинар можно подключаться в режиме “Слушаю”, если вы на работе, в дороге или просто не можете говорить, но есть возможность слушать. Для этого достаточно написать в чат Zoom “слушаю”, если есть возможность, ответы на вопросы можно писать в чат Zoom. Кстати, это прекрасный способ включиться в группу, если вы пока еще не готовы говорить ☺.\n\nЕсли у вас есть сомнения, трудности по включению, иные вопросы, пожалуйста, обращайтесь, буду рад(а) вам помочь.\n\nБуду благодарен (благодарна) за обратную связь.\n\nС наилучшими пожеланиями,\nваш тьютор {{tutors}}."
+            },
+            {
+                id: "close-ok1",
+                title: "Закрытие чата ОК1 (переход)",
+                category: "transition",
+                text: "☞ *Дорогие студенты!* ☞\n\n*Мы продолжаем обучение на 2 части курса {{course}} — Практическая каббала* ☞\n\nИ в ближайшее время всех студентов 2 части курса подключим к новому чату. ☞\n\n*Этот чат мы закроем для общения.*\n\n*Студентам, которые не записались на 2 часть, мы предлагаем:*\n☞ Записаться на 2 часть курса по ссылке https://kabacademy.com/product/osnovy-kabbaly-chast-2-vesna-2026/ и продолжить обучение с группой.\n\nДля тех из вас, кто решил не продолжать обучение, предлагаем:\n☞ записаться в МАК клуб http://kabacademy.com/product/mak-club/\n☞ Программа клуба поможет вам в будущем лучше ориентироваться в наших материалах.\n\nМАК Клуб — это:\n• 15 последовательно выстроенных курсов самообучения,\n• вебинары и семинары по воскресеньям.\n\n☞ Подписаться на наш канал в Telegram Сокровищница каббалы https://t.me/+yo-bd3Da05ZIMTEy\n\nПредложение можно отправлять всем, кто интересуется наукой каббала ☞\n\nЕсли у вас есть вопросы, пожалуйста, пишите их тьюторам в личном сообщении.\nВы всегда можете продолжить обучение, просто напишите нам о вашем желании на адрес secretary@kabacademy.com\n\n*Удачи!* ☞\n_Учебный отдел МАК_ ☞"
+            },
+            {
+                id: "greeting-ok2",
+                title: "Приветствие в новом чате (ОК2)",
+                category: "transition",
+                text: "☞ *Дорогие студенты Международной академии каббалы!* ☜\n\n_Приветствуем вас в чате учебной десятки №_{{group}}_\n_второй части курса Основы каббалы — Практическая каббала._\n\n☞ Команда тьюторов в составе:\n{{tutors}}\n\nБудем сопровождать вас на курсе.\n\nВы можете задавать нам ваши вопросы по организации процесса обучения, в том числе на нашем учебном сайте, технические вопросы (Zoom) и др.\n\n_Вопросы, касающиеся духовного развития, просим задавать преподавателям Международной академии каббалы._\n\n☞ Просим ознакомиться и соблюдать правила чата нашей учебной десятки и правила организации (ниже в сообщениях) ☞ правила чата десятки в описании этого чата.\n\n*Хорошего обучения!* ☞"
+            },
+            {
+                id: "transition-ten",
+                title: "Приглашение в чат десятки (выпускникам)",
+                category: "transition",
+                text: "*Друзья!*\n\n*Мы закончили курс {{course}}!*\n\nБольшое спасибо всем, кто был с нами на протяжении всего курса.\n\n*Сейчас каждому из нас предстоит сделать выбор* — хочу ли я продолжить свой духовный путь по методике Бааль Сулама и Рабаша вместе с группой ☺\n\n*Все участники нашей учебной группы №_{{group}} могут продолжить свой духовный путь в составе десятки №_{{group}}_\n\n*Присоединение к чату десятки означает, что вы выражаете свое согласие продолжить духовный путь по методике Бааль Сулама и Рабаша в составе десятки в нашем сообществе Бней Барух.*\n\nСсылка на чат: [ВСТАВИТЬ ССЫЛКУ]\n\n❗️ Этот чат мы закроем для общения в ближайшие дни.\n\n*Для тех, кто пока не готов продолжать дальше, мы предлагаем:*\n✡ *записаться в МАК клуб* ✡ http://kabacademy.com/product/mak-club/\n✡ подписаться на наш канал *Сокровищница каббалы* https://t.me/+yo-bd3Da05ZIMTEy\n\n*Одновременно сообщаем, что все материалы курса доступны вам в вашем личном кабинете* на нашем сайте еще *6 месяцев* https://edu.kabacademy.com/my/\n\n*Друзья, сообщаем вам, что повторно на курс {{course}} академия не принимает*, по всем вопросам, связанным с данным курсом, пишите на адрес: secretary@kabacademy.com\n\n*Всем спасибо за наше вместе и удачи!* ✡"
+            }
+        ];
+
+        // Переменные
+        let variables = {
+            group: '',
+            tutors: '',
+            student: '',
+            course: 'Основы каббалы',
+            stream: 'Весна 2026'
+        };
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromUrl();
+            renderTemplates();
+            updateVariables();
+        });
+
+        // Загрузка параметров из URL
+        function loadFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('group')) variables.group = urlParams.get('group');
+            if (urlParams.has('tutors')) variables.tutors = urlParams.get('tutors');
+            if (urlParams.has('student')) variables.student = urlParams.get('student');
+            if (urlParams.has('course')) variables.course = urlParams.get('course');
+            if (urlParams.has('stream')) variables.stream = urlParams.get('stream');
+
+            document.getElementById('var-group').value = variables.group;
+            document.getElementById('var-tutors').value = variables.tutors;
+            document.getElementById('var-student').value = variables.student;
+            document.getElementById('var-course').value = variables.course;
+            document.getElementById('var-stream').value = variables.stream;
+        }
+
+        // Сохранение в URL
+        function saveToUrl() {
+            const url = new URL(window.location);
+            if (variables.group) url.searchParams.set('group', variables.group); else url.searchParams.delete('group');
+            if (variables.tutors) url.searchParams.set('tutors', variables.tutors); else url.searchParams.delete('tutors');
+            if (variables.student) url.searchParams.set('student', variables.student); else url.searchParams.delete('student');
+            if (variables.course) url.searchParams.set('course', variables.course); else url.searchParams.delete('course');
+            if (variables.stream) url.searchParams.set('stream', variables.stream); else url.searchParams.delete('stream');
+            
+            window.history.replaceState({}, '', url);
+        }
+
+        // Обновление переменных и текста
+        function updateVariables() {
+            variables.group = document.getElementById('var-group').value.trim() || '___';
+            variables.tutors = document.getElementById('var-tutors').value.trim() || 'Имя, Фамилия';
+            variables.student = document.getElementById('var-student').value.trim() || 'Имя студента';
+            variables.course = document.getElementById('var-course').value.trim() || 'Основы каббалы';
+            variables.stream = document.getElementById('var-stream').value.trim() || 'Текущий поток';
+
+            saveToUrl();
+            updateTemplateTexts();
+        }
+
+        // Применение переменных к тексту
+        function applyVariables(text) {
+            return text
+                .replace(/{{group}}/g, variables.group)
+                .replace(/{{tutors}}/g, variables.tutors)
+                .replace(/{{student}}/g, variables.student)
+                .replace(/{{course}}/g, variables.course)
+                .replace(/{{stream}}/g, variables.stream);
+        }
+
+        // Обновление текста во всех карточках
+        function updateTemplateTexts() {
+            document.querySelectorAll('.card').forEach(card => {
+                const id = card.dataset.id;
+                const template = templates.find(t => t.id === id);
+                const textarea = card.querySelector('.card-text');
+                
+                // Сохраняем позицию курсора, если пользователь редактировал вручную
+                const selectionStart = textarea.selectionStart;
+                const selectionEnd = textarea.selectionEnd;
+                
+                textarea.value = applyVariables(template.text);
+                
+                // Восстанавливаем позицию (если возможно)
+                if (document.activeElement === textarea) {
+                    textarea.setSelectionRange(selectionStart, selectionEnd);
+                }
+            });
+        }
+
+        // Рендер шаблонов
+        function renderTemplates() {
+            const container = document.getElementById('templates-container');
+            container.innerHTML = '';
+
+            templates.forEach(template => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.id = template.id;
+                card.dataset.category = template.category;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-title">${template.title}</span>
+                        <span class="card-category">${getCategoryName(template.category)}</span>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="card-text" spellcheck="false"></textarea>
+                    </div>
+                    <div class="card-footer">
+                        <button class="copy-btn" onclick="copyText(this)">
+                            📋 Скопировать
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            updateTemplateTexts();
+        }
+
+        // Копирование текста
+        function copyText(btn) {
+            const textarea = btn.closest('.card').querySelector('.card-text');
+            
+            // Сначала выделяем текст
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // Для мобильных устройств
+
+            try {
+                // Пытаемся использовать современный API
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    showSuccess(btn);
+                }).catch(() => {
+                    // Фолбэк для старых браузеров
+                    document.execCommand('copy');
+                    showSuccess(btn);
+                });
+            } catch (err) {
+                document.execCommand('copy');
+                showSuccess(btn);
+            }
+        }
+
+        // Визуальный отклик при копировании
+        function showSuccess(btn) {
+            const originalText = btn.innerHTML;
+            btn.classList.add('success');
+            btn.innerHTML = '✅ Скопировано!';
+            
+            showToast();
+
+            setTimeout(() => {
+                btn.classList.remove('success');
+                btn.innerHTML = originalText;
+                // Снимаем выделение
+                const textarea = btn.closest('.card').querySelector('.card-text');
+                textarea.blur();
+            }, 2000);
+        }
+
+        // Показ уведомления
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Фильтрация
+        function filterTemplates(category) {
+            // Обновляем кнопки
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Фильтруем карточки
+            document.querySelectorAll('.card').forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Названия категорий
+        function getCategoryName(cat) {
+            const names = {
+                'general': 'Общие',
+                'tech': 'Технические',
+                'personal': 'Личные',
+                'transition': 'Переход'
+            };
+            return names[cat] || cat;
+        }
+    </script>
+</body>
+</html>
