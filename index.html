@@ -26,11 +26,10 @@
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.5;
-            /* Отступ снизу, чтобы контент не прятался за нижней панелью */
-            padding-bottom: 200px; 
+            padding-bottom: 40px; /* Небольшой отступ в самом низу страницы */
         }
 
-        /* Settings Panel (Верхняя, скроллится) */
+        /* Settings Panel (Верхняя) */
         .settings-panel {
             background: var(--card-bg);
             padding: 20px;
@@ -227,26 +226,22 @@
             background: var(--success);
         }
 
-        /* Нижняя панель отправки (Docked) */
+        /* Нижняя панель отправки (На всю ширину, но не fixed) */
         .send-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            background-color: var(--card-bg);
             border-top: 1px solid var(--border);
-            padding: 15px 20px;
-            z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+            padding: 25px 20px;
+            margin-top: 40px; /* Отступ от карточек */
         }
 
         .send-controls {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 650px; /* Ограничиваем ширину содержимого */
+            margin: 0 auto;   /* Центрируем */
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-end;
             gap: 15px;
             flex-wrap: wrap;
         }
@@ -259,15 +254,16 @@
         }
 
         .send-controls label {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             color: #666;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             text-transform: uppercase;
         }
 
         .send-controls input {
-            padding: 10px 15px;
+            width: 100%;
+            padding: 12px 15px;
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 16px;
@@ -282,7 +278,6 @@
         .send-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 15px; /* Выравнивание с полем ввода */
         }
 
         .send-btn {
@@ -290,12 +285,12 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 6px;
             text-decoration: none;
             color: white;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             transition: opacity 0.2s, transform 0.1s;
             border: none;
             cursor: pointer;
@@ -329,7 +324,7 @@
         /* Toast */
         .toast {
             position: fixed;
-            bottom: 120px; /* Подняли чуть выше, чтобы не перекрывать панель */
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: #333;
@@ -351,19 +346,17 @@
 
         /* Адаптивность */
         @media (max-width: 768px) {
-            body { padding-bottom: 220px; }
             .settings-grid { grid-template-columns: 1fr; }
             .container { grid-template-columns: 1fr; }
-            .send-controls { flex-direction: column; align-items: stretch; gap: 10px; }
-            .send-buttons { margin-top: 0; }
-            .send-btn { flex: 1; padding: 12px 10px; }
-            .toast { bottom: 160px; }
+            .send-controls { flex-direction: column; align-items: stretch; gap: 15px; }
+            .send-buttons { flex-direction: column; }
+            .send-btn { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Верхняя панель (скроллится) -->
+    <!-- Верхняя панель -->
     <div class="settings-panel">
         <div class="settings-grid">
             <div class="input-group">
@@ -396,11 +389,11 @@
         <!-- Шаблоны генерируются через JS -->
     </div>
 
-    <!-- Нижняя панель отправки (Docked) -->
+    <!-- Нижняя панель отправки (На всю ширину) -->
     <div class="send-panel">
         <div class="send-controls">
             <div class="input-wrapper">
-                <label>Номер телефона студента (с кодом страны)</label>
+                <label>Номер телефона студента</label>
                 <input type="tel" id="var-phone" placeholder="+7 999 123-45-67" oninput="updateLinks()">
             </div>
             <div class="send-buttons">
@@ -601,13 +594,12 @@
             variables.phone = document.getElementById('var-phone').value.trim();
             saveToUrl();
 
-            // Оставляем только цифры
             const cleanPhone = variables.phone.replace(/[^\d]/g, '');
             const btnWa = document.getElementById('btn-wa');
             const btnTg = document.getElementById('btn-tg');
 
             if (cleanPhone.length >= 10) {
-                // Добавляем "+" в ссылку wa.me, как вы просили
+                // Знак "+" в ссылке
                 btnWa.href = `https://wa.me/+${cleanPhone}`;
                 btnTg.href = `https://t.me/+${cleanPhone}`;
                 
