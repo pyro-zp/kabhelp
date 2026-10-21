@@ -34,15 +34,13 @@
             background: var(--card-bg);
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
             border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
         }
 
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             max-width: 1200px;
             margin: 0 auto;
@@ -54,7 +52,7 @@
         }
 
         .input-group label {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             color: #666;
             margin-bottom: 5px;
@@ -62,10 +60,10 @@
         }
 
         .input-group input {
-            padding: 8px 12px;
+            padding: 10px 12px;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 15px;
             transition: border-color 0.2s;
         }
 
@@ -78,7 +76,7 @@
             text-align: center;
             font-size: 12px;
             color: #888;
-            margin-top: 10px;
+            margin-top: 15px;
             max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
@@ -87,7 +85,7 @@
         /* Filters */
         .filters {
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 0 auto 20px auto;
             padding: 0 20px;
             display: flex;
             gap: 10px;
@@ -174,7 +172,7 @@
 
         .card-text {
             width: 100%;
-            min-height: 180px;
+            min-height: 200px;
             border: 1px solid transparent;
             border-radius: 6px;
             padding: 10px;
@@ -266,24 +264,16 @@
                 <input type="text" id="var-group" placeholder="Например: 15" oninput="updateVariables()">
             </div>
             <div class="input-group">
-                <label>Имена тьюторов</label>
+                <label>Имя тьютора</label>
                 <input type="text" id="var-tutors" placeholder="Например: Иван, Мария" oninput="updateVariables()">
             </div>
             <div class="input-group">
                 <label>Имя студента</label>
                 <input type="text" id="var-student" placeholder="Например: Анна" oninput="updateVariables()">
             </div>
-            <div class="input-group">
-                <label>Название курса</label>
-                <input type="text" id="var-course" placeholder="Например: Основы каббалы" oninput="updateVariables()">
-            </div>
-            <div class="input-group">
-                <label>Поток</label>
-                <input type="text" id="var-stream" placeholder="Например: Весна 2026" oninput="updateVariables()">
-            </div>
         </div>
         <div class="url-hint">
-            💡 Параметры сохраняются в адресной строке. Вы можете скопировать ссылку и сохранить её в закладки.
+            💡 Параметры сохраняются в адресной строке. Вы можете скопировать ссылку из браузера и сохранить её в закладки — при следующем открытии все поля заполнятся автоматически.
         </div>
     </div>
 
@@ -302,6 +292,10 @@
     <div class="toast" id="toast">Скопировано в буфер обмена!</div>
 
     <script>
+        // Жестко заданные значения по умолчанию
+        const DEFAULT_COURSE = "Классическая каббала";
+        const DEFAULT_STREAM = "Осень 2026";
+
         // Базовые шаблоны с плейсхолдерами
         const templates = [
             {
@@ -413,16 +407,16 @@
                 text: "{{student}}, здравствуйте!\n\nМеня зовут {{tutors}}, я тьютор учебной группы №_{{group}} курса {{course}} Международной академии каббалы.\n\nОбратил(а) внимание, что вы успешно проходите наш курс на учебном сайте, очень рад(а) вашим успехам.\n\nОднако вы очень редко приходите (не приходите) на семинары по понедельникам в нашей учебной группе.\n\nСеминар — особая методика построения системы отношений, основанная на законах природы, действующих во всех ее пластах на принципе объединения. Семинар — основной инструмент нашей методики.\n\nСейчас, во время обучения, мы закладываем основу будущей десятки и очень важно как можно раньше включиться в семинары.\n\nОбычно, если студент не включается в семинары на первой части курса, то с каждым следующим семинаром требуется приложить большие усилия, чтобы начать посещать семинары. Так устроена наша природа ☺ — мне трудно, некомфортно (неудобно и пр.) прийти в группу, которая уже связана между собой.\n\nНа семинар можно подключаться в режиме “Слушаю”, если вы на работе, в дороге или просто не можете говорить, но есть возможность слушать. Для этого достаточно написать в чат Zoom “слушаю”, если есть возможность, ответы на вопросы можно писать в чат Zoom. Кстати, это прекрасный способ включиться в группу, если вы пока еще не готовы говорить ☺.\n\nЕсли у вас есть сомнения, трудности по включению, иные вопросы, пожалуйста, обращайтесь, буду рад(а) вам помочь.\n\nБуду благодарен (благодарна) за обратную связь.\n\nС наилучшими пожеланиями,\nваш тьютор {{tutors}}."
             },
             {
-                id: "close-ok1",
-                title: "Закрытие чата ОК1 (переход)",
+                id: "close-kk1",
+                title: "Закрытие чата КК1 (переход)",
                 category: "transition",
-                text: "☞ *Дорогие студенты!* ☞\n\n*Мы продолжаем обучение на 2 части курса {{course}} — Практическая каббала* ☞\n\nИ в ближайшее время всех студентов 2 части курса подключим к новому чату. ☞\n\n*Этот чат мы закроем для общения.*\n\n*Студентам, которые не записались на 2 часть, мы предлагаем:*\n☞ Записаться на 2 часть курса по ссылке https://kabacademy.com/product/osnovy-kabbaly-chast-2-vesna-2026/ и продолжить обучение с группой.\n\nДля тех из вас, кто решил не продолжать обучение, предлагаем:\n☞ записаться в МАК клуб http://kabacademy.com/product/mak-club/\n☞ Программа клуба поможет вам в будущем лучше ориентироваться в наших материалах.\n\nМАК Клуб — это:\n• 15 последовательно выстроенных курсов самообучения,\n• вебинары и семинары по воскресеньям.\n\n☞ Подписаться на наш канал в Telegram Сокровищница каббалы https://t.me/+yo-bd3Da05ZIMTEy\n\nПредложение можно отправлять всем, кто интересуется наукой каббала ☞\n\nЕсли у вас есть вопросы, пожалуйста, пишите их тьюторам в личном сообщении.\nВы всегда можете продолжить обучение, просто напишите нам о вашем желании на адрес secretary@kabacademy.com\n\n*Удачи!* ☞\n_Учебный отдел МАК_ ☞"
+                text: "☞ *Дорогие студенты!* ☞\n\n*Мы продолжаем обучение на 2 части курса {{course}}* ☞\n\nИ в ближайшее время всех студентов 2 части курса подключим к новому чату. ☞\n\n*Этот чат мы закроем для общения.*\n\n*Студентам, которые не записались на 2 часть, мы предлагаем:*\n☞ Записаться на 2 часть курса по ссылке https://kabacademy.com/product/osnovy-kabbaly-chast-2-vesna-2026/ и продолжить обучение с группой.\n\nДля тех из вас, кто решил не продолжать обучение, предлагаем:\n☞ записаться в МАК клуб http://kabacademy.com/product/mak-club/\n☞ Программа клуба поможет вам в будущем лучше ориентироваться в наших материалах.\n\nМАК Клуб — это:\n• 15 последовательно выстроенных курсов самообучения,\n• вебинары и семинары по воскресеньям.\n\n☞ Подписаться на наш канал в Telegram Сокровищница каббалы https://t.me/+yo-bd3Da05ZIMTEy\n\nПредложение можно отправлять всем, кто интересуется наукой каббала ☞\n\nЕсли у вас есть вопросы, пожалуйста, пишите их тьюторам в личном сообщении.\nВы всегда можете продолжить обучение, просто напишите нам о вашем желании на адрес secretary@kabacademy.com\n\n*Удачи!* ☞\n_Учебный отдел МАК_ ☞"
             },
             {
-                id: "greeting-ok2",
-                title: "Приветствие в новом чате (ОК2)",
+                id: "greeting-kk2",
+                title: "Приветствие в новом чате (КК2)",
                 category: "transition",
-                text: "☞ *Дорогие студенты Международной академии каббалы!* ☜\n\n_Приветствуем вас в чате учебной десятки №_{{group}}_\n_второй части курса Основы каббалы — Практическая каббала._\n\n☞ Команда тьюторов в составе:\n{{tutors}}\n\nБудем сопровождать вас на курсе.\n\nВы можете задавать нам ваши вопросы по организации процесса обучения, в том числе на нашем учебном сайте, технические вопросы (Zoom) и др.\n\n_Вопросы, касающиеся духовного развития, просим задавать преподавателям Международной академии каббалы._\n\n☞ Просим ознакомиться и соблюдать правила чата нашей учебной десятки и правила организации (ниже в сообщениях) ☞ правила чата десятки в описании этого чата.\n\n*Хорошего обучения!* ☞"
+                text: "☞ *Дорогие студенты Международной академии каббалы!* ☜\n\n_Приветствуем вас в чате учебной десятки №_{{group}}_\n_второй части курса {{course}}._\n\n☞ Команда тьюторов в составе:\n{{tutors}}\n\nБудем сопровождать вас на курсе.\n\nВы можете задавать нам ваши вопросы по организации процесса обучения, в том числе на нашем учебном сайте, технические вопросы (Zoom) и др.\n\n_Вопросы, касающиеся духовного развития, просим задавать преподавателям Международной академии каббалы._\n\n☞ Просим ознакомиться и соблюдать правила чата нашей учебной десятки и правила организации (ниже в сообщениях) ☞ правила чата десятки в описании этого чата.\n\n*Хорошего обучения!* ☞"
             },
             {
                 id: "transition-ten",
@@ -437,8 +431,8 @@
             group: '',
             tutors: '',
             student: '',
-            course: 'Основы каббалы',
-            stream: 'Весна 2026'
+            course: DEFAULT_COURSE,
+            stream: DEFAULT_STREAM
         };
 
         // Инициализация
@@ -454,14 +448,10 @@
             if (urlParams.has('group')) variables.group = urlParams.get('group');
             if (urlParams.has('tutors')) variables.tutors = urlParams.get('tutors');
             if (urlParams.has('student')) variables.student = urlParams.get('student');
-            if (urlParams.has('course')) variables.course = urlParams.get('course');
-            if (urlParams.has('stream')) variables.stream = urlParams.get('stream');
 
             document.getElementById('var-group').value = variables.group;
             document.getElementById('var-tutors').value = variables.tutors;
             document.getElementById('var-student').value = variables.student;
-            document.getElementById('var-course').value = variables.course;
-            document.getElementById('var-stream').value = variables.stream;
         }
 
         // Сохранение в URL
@@ -470,8 +460,6 @@
             if (variables.group) url.searchParams.set('group', variables.group); else url.searchParams.delete('group');
             if (variables.tutors) url.searchParams.set('tutors', variables.tutors); else url.searchParams.delete('tutors');
             if (variables.student) url.searchParams.set('student', variables.student); else url.searchParams.delete('student');
-            if (variables.course) url.searchParams.set('course', variables.course); else url.searchParams.delete('course');
-            if (variables.stream) url.searchParams.set('stream', variables.stream); else url.searchParams.delete('stream');
             
             window.history.replaceState({}, '', url);
         }
@@ -481,8 +469,6 @@
             variables.group = document.getElementById('var-group').value.trim() || '___';
             variables.tutors = document.getElementById('var-tutors').value.trim() || 'Имя, Фамилия';
             variables.student = document.getElementById('var-student').value.trim() || 'Имя студента';
-            variables.course = document.getElementById('var-course').value.trim() || 'Основы каббалы';
-            variables.stream = document.getElementById('var-stream').value.trim() || 'Текущий поток';
 
             saveToUrl();
             updateTemplateTexts();
@@ -505,13 +491,11 @@
                 const template = templates.find(t => t.id === id);
                 const textarea = card.querySelector('.card-text');
                 
-                // Сохраняем позицию курсора, если пользователь редактировал вручную
                 const selectionStart = textarea.selectionStart;
                 const selectionEnd = textarea.selectionEnd;
                 
                 textarea.value = applyVariables(template.text);
                 
-                // Восстанавливаем позицию (если возможно)
                 if (document.activeElement === textarea) {
                     textarea.setSelectionRange(selectionStart, selectionEnd);
                 }
@@ -552,17 +536,13 @@
         // Копирование текста
         function copyText(btn) {
             const textarea = btn.closest('.card').querySelector('.card-text');
-            
-            // Сначала выделяем текст
             textarea.select();
-            textarea.setSelectionRange(0, 99999); // Для мобильных устройств
+            textarea.setSelectionRange(0, 99999);
 
             try {
-                // Пытаемся использовать современный API
                 navigator.clipboard.writeText(textarea.value).then(() => {
                     showSuccess(btn);
                 }).catch(() => {
-                    // Фолбэк для старых браузеров
                     document.execCommand('copy');
                     showSuccess(btn);
                 });
@@ -583,7 +563,6 @@
             setTimeout(() => {
                 btn.classList.remove('success');
                 btn.innerHTML = originalText;
-                // Снимаем выделение
                 const textarea = btn.closest('.card').querySelector('.card-text');
                 textarea.blur();
             }, 2000);
@@ -600,11 +579,9 @@
 
         // Фильтрация
         function filterTemplates(category) {
-            // Обновляем кнопки
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Фильтруем карточки
             document.querySelectorAll('.card').forEach(card => {
                 if (category === 'all' || card.dataset.category === category) {
                     card.style.display = 'flex';
